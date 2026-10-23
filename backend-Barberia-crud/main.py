@@ -18,12 +18,13 @@ app = FastAPI(
 
 
 def _database_url() -> str:
-    url = os.getenv("DATABASE_URL", "sqlite:///./barberia.db")
+    # Render supplies this variable at runtime; trim accidental pasted whitespace.
+    url = os.getenv("DATABASE_URL", "sqlite:///./barberia.db").strip()
     if url.startswith("postgres://"):
         url = url.replace("postgres://", "postgresql+psycopg://", 1)
     elif url.startswith("postgresql://"):
         url = url.replace("postgresql://", "postgresql+psycopg://", 1)
-    if ".supabase.co" in url and "sslmode=" not in url:
+    if (".supabase.co" in url or ".supabase.com" in url) and "sslmode=" not in url:
         url += "&sslmode=require" if "?" in url else "?sslmode=require"
     return url
 
