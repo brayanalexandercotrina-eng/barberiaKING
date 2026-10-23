@@ -2,6 +2,12 @@
 
 API REST para administrar citas de barbería con FastAPI. Esta adaptación de la guía conserva el caso de uso de 1Barber: usa PostgreSQL en Supabase para persistir las citas, Render para desplegar la API y Firebase Authentication para validar tokens de clientes. El bloque de cotizaciones de calculadoras cloud de la guía se omite.
 
+## Adaptación de la guía al proyecto
+
+La guía usa como ejemplo una biblioteca y una app móvil. En este repositorio, la entidad equivalente es una cita de barbería y el entregable disponible es el backend FastAPI. Por eso, las rutas `/api/v1/barberia` y la tabla `citas_barberia` reemplazan el ejemplo `/api/v1/libros`. El backend ya implementa el CRUD, la conexión PostgreSQL/Supabase, la validación opcional de Firebase ID tokens y el contenedor Docker.
+
+La guía también solicita una app Android/Web con Firebase y capturas de cotizaciones de Google Cloud y AWS. Esos entregables no forman parte del código de este repositorio, así que no se presentan como implementados ni se inventan valores de precio. Para completar esa parte académica habría que usar las características y región que indique el docente, guardar las estimaciones oficiales como evidencia y desarrollar/conectar el cliente móvil o web.
+
 ## Funciones
 
 - Consultar, crear, actualizar y eliminar citas desde `/api/v1/barberia`.
@@ -43,10 +49,12 @@ Si `REQUIRE_FIREBASE_AUTH=true` no tiene una credencial Firebase configurada, la
 
 ## Despliegue en Render
 
-1. Sube el repositorio a GitHub. Render debe usar como **Root Directory** `backend-Barberia-crud`.
-2. Crea un **Web Service** conectado al repositorio. Elige el runtime Docker para usar el `Dockerfile` incluido (o Python con `pip install -r requirements.txt` y `uvicorn main:app --host 0.0.0.0 --port $PORT`).
-3. En **Environment Variables**, define `DATABASE_URL` con la URI PostgreSQL de Supabase, `FIREBASE_CREDENTIALS_JSON` con el JSON de la cuenta de servicio y `REQUIRE_FIREBASE_AUTH=true`.
-4. Usa `/health` como health check path. Al desplegar, abre `/docs` para explorar la API.
+1. Sube el repositorio a GitHub.
+2. En Render, crea un **Blueprint** desde el repositorio y selecciona `render.yaml`. El Blueprint configura `backend-Barberia-crud` como raíz, el Dockerfile, el endpoint `/health` y las variables necesarias.
+3. Render solicitará los valores secretos `DATABASE_URL` y `FIREBASE_CREDENTIALS_JSON`. Introduce la URI PostgreSQL de Supabase y el JSON de la cuenta de servicio Firebase en el panel privado de Render. No los guardes en el repositorio. `REQUIRE_FIREBASE_AUTH` queda activado por la configuración del Blueprint.
+4. Cuando finalice el despliegue, abre `/health` para comprobar el servicio y `/docs` para explorar la API. Las rutas de citas deben responder 401 si se omite un token Firebase válido.
+
+También puedes crear el servicio manualmente con **Root Directory** `backend-Barberia-crud`, runtime Docker, health check `/health` y las mismas variables de entorno.
 
 El filesystem de un servicio gratuito puede ser efímero; por eso el despliegue debe usar Supabase mediante `DATABASE_URL` y no depender del SQLite local.
 

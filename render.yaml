@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: barberia-king-api
+    runtime: docker
+    rootDir: backend-Barberia-crud
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: FIREBASE_CREDENTIALS_JSON
+        sync: false
+      - key: REQUIRE_FIREBASE_AUTH
+        value: "true"
