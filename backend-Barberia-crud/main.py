@@ -1,6 +1,8 @@
 import json
+import logging
 import os
 from typing import Generator, List, Optional
+from urllib.parse import urlsplit
 
 import firebase_admin
 from fastapi import Depends, FastAPI, Header, HTTPException, status
@@ -16,10 +18,34 @@ app = FastAPI(
     version="1.0.0",
 )
 
+logger = logging.getLogger(__name__)
+
 
 def _database_url() -> str:
     # Render supplies this variable at runtime; trim accidental pasted whitespace.
-    url = os.getenv("DATABASE_URL", "sqlite:///./barberia.db").strip()
+    raw_url = os.getenv("DATABASE_URL")
+    if not raw_url or not raw_url.strip():
+        if os.getenv("RENDER", "").lower() == "true":
+            logger.error("DATABASE_URL no está configurada en Render.")
+            raise RuntimeError("DATABASE_URL no está configurada en Render.")
+        logger.warning("DATABASE_URL no configurada; usando SQLite local.")
+        return "sqlite:///./barberia.db"
+
+    url = raw_url.strip()
+    safe_url = url.replace("postgres://", "postgresql://", 1) if url.startswith("postgres://") else url
+    parsed_url = urlsplit(safe_url)
+    try:
+        host = parsed_url.hostname or "sin-host"
+        port = parsed_url.port or "predeterminado"
+    except ValueError:
+        host, port = "URL-inválida", "inválido"
+    logger.info(
+        "DATABASE_URL configurada: esquema=%s host=%s puerto=%s espacios_exteriores_recortados=%s",
+        parsed_url.scheme or "sin-esquema",
+        host,
+        port,
+        raw_url != url,
+    )
     if url.startswith("postgres://"):
         url = url.replace("postgres://", "postgresql+psycopg://", 1)
     elif url.startswith("postgresql://"):
