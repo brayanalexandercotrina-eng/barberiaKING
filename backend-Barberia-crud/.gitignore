@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+venv/
+.venv/
+
+# Configuración y secretos locales
+.env
+.env.*
+!.env.example
+*service-account*.json
+firebase-adminsdk-*.json
+
+# Base local
+*.db
+*.sqlite3
+
+# Editores y sistema operativo
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Cliente Thunder
+.thunder-client/
